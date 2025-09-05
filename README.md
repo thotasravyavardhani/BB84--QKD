@@ -1,5 +1,3 @@
-# BB84--QKD
-
 # BB84 QKD Professional Simulator & Testbed
 
 ## Overview
