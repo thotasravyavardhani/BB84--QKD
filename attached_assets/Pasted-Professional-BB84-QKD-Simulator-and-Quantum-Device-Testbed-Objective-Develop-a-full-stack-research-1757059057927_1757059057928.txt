@@ -1,0 +1,118 @@
+Professional BB84 QKD Simulator and Quantum Device Testbed
+Objective: Develop a full-stack, research-grade web application to simulate the BB84 Quantum Key Distribution (QKD) protocol. This application will also serve as a virtual testbed for evaluating the performance of real-world quantum devices, making it suitable for research and professional use. The design must be clean, professional, and visually compelling, inspired by the aesthetic of Google Cloud.
+
+Part 1: Frontend - User Interface and Visualization
+The frontend will be a single-file web application (index.html) using HTML, Tailwind CSS (via CDN), and vanilla JavaScript. It must be highly professional and creative in its visualization and representation.
+
+1. Homepage:
+
+Design: A minimalist landing page with a subtle parallax effect in the background to convey a secure and technological environment.
+
+Content: A brief, professional introduction to QKD and the purpose of the application: "A Research Testbed for Quantum Key Distribution."
+
+2. Core Application Layout:
+
+A main navigation bar to switch between two primary components: "BB84 Simulator" and "Quantum Device Testbed Lab."
+
+Both components will have a main content area for visualizations and a dedicated sidebar for parameter configuration.
+
+3. BB84 Simulator UI:
+
+Parameter Sidebar: A professional, easy-to-use sidebar with the following controls:
+
+Qubit Generation Scenario: A radio button group to select one of the following three options:
+
+Manual Input: User enters the qubit bit string (e.g., 0110) and a corresponding basis string (e.g., +x+x).
+
+Auto-Generated: User sets the number of qubits with a slider (up to 32 bits). A second radio button group allows them to choose between:
+a.  Quantum RNG: Connects to an IBM Quantum Device to generate up to 5-6 qubits using QRNG or SamplerV2.
+b.  Classical RNG: Generates up to 32 bits using a classical random number generator.
+
+Photon Generation Rate: A scrollbar to set the rate in Hz, which will directly influence the speed of the visualization.
+
+Continuous Parameters: Interactive scrollbars for "Distance" (in km) and "Noise."
+
+Eve's Interception: A dropdown menu to select different types of attacks (e.g., Intercept-Resend) or "None."
+
+Error Correction & Privacy Amplification: Dropdown menus to select different techniques (e.g., Cascade for error correction).
+
+Controls: Prominently display "Run Simulation," "Play," "Pause," and "Reset" buttons.
+
+Real-time Logs: A dedicated log window to display professional, step-by-step messages, such as "IBM Quantum API connected," "Connection to Real Device failed, falling back to Simulator," "Qubits received from backend," and error messages.
+
+4. Simulator Visualization & Output:
+
+Quantum Channel Visualization: A clean, animated representation of the quantum channel. Qubits should be represented by clear shapes and colors to denote bases and polarization states. The animation must be smooth and professional. The visualization should be highly professional and avoid a "child learning app" feel.
+
+Animation Controls: The "Play," "Pause," and "Reset" buttons must control the animation, which should work consistently across all three qubit generation scenarios. A "live scrubbing" scrollbar will allow the user to manually move forward and backward to observe each qubit's journey from Alice to Bob. The visualization must not be clumsy; Alice's sent qubits, Bob's received qubits, and Eve's interception must be clearly distinguishable.
+
+Dashboard & Graphs: A professional, responsive dashboard will display:
+
+Key Statistics: A live-updating table showing Alice's Bits, Alice's Bases, Bob's Bits, Bob's Bases, Eve's Bases, and the Sifted Keys.
+
+Security Analysis: A clear, prominent indicator of "Secure" or "Not Secure" based on the QBER threshold.
+
+Performance Metrics: Animated charts and graphs (line, bar, and pie charts) for:
+
+Quantum Bit Error Rate (QBER).
+
+Key Generation Rate.
+
+Key Accuracy.
+
+Performance Comparison: A dedicated graph comparing the performance (speed and accuracy) of the classical vs. quantum methods for the given input. The graph must clearly show how the quantum approach performs relative to the classical.
+
+Live Parameters: The simulation should not stop and restart when a parameter is changed. Instead, the simulation must continue with the new, adjusted parameters, updating the visualization and metrics live.
+
+5. Quantum Device Testbed "Lab" UI:
+
+Purpose: A separate component for a simulated testbed to verify a device's suitability for a real QKD setup.
+
+Input: Only a scrollbar for "Photon Generation Rate." The backend logic will use this to simulate a test run and provide metrics.
+
+Live Connectivity: A visible status indicator will show the connection to the IBM Quantum API. If the connection fails, a log message must be displayed, and the backend must automatically use the Qiskit simulator as a fallback.
+
+Output: Display professional metrics critical for real-world devices, such as Secure Key Rate, Detection Efficiency, Dark Count Rate, and QBER.
+
+Part 2: Backend - Core Logic and API
+The backend will be a Python 3.11 application using Flask. All quantum computing tasks, including qubit generation, simulation, and data processing, will be handled by the backend.
+
+Core Logic:
+
+Use qiskit for quantum operations and qiskit-ibm-runtime for connecting to a real IBM Quantum computer (limited to 5-6 qubits).
+
+Implement the full BB84 protocol for three distinct implementation modes:
+
+Classical Simulator: Your own Python code.
+
+Qiskit Simulator: Using the Qiskit Aer simulator.
+
+Real Quantum Device: Using the IBM Quantum API.
+
+Simulate the effects of "Distance" and "Noise" on QBER and key loss.
+
+Implement various Eve attacks and different techniques for Error Correction (e.g., Cascade) and Privacy Amplification.
+
+API Endpoints:
+
+/api/run_simulation: Accepts all frontend parameters and returns step-by-step simulation data for visualization.
+
+/api/run_testbed: Accepts the Photon Generation Rate and returns the simulated device performance metrics.
+
+Data Persistence:
+
+Use Firebase Firestore to save and retrieve testbed device configurations and test results.
+
+The backend must correctly use the provided global variables __app_id, __firebase_config, and __initial_auth_token for Firebase initialization and user authentication.
+
+Dependencies: A requirements.txt file will be provided for easy installation of all Python dependencies.
+
+Important Notes and Disclaimer:
+All theoretical thresholds (e.g., QBER threshold of 11% for security) should be based on established research values (e.g., from Bennett & Brassard). Any values that are a simplification or assumption must be clearly noted in the documentation or logs.
+
+References:
+BB84 Simulator Source Code: https://github.com/thotasravyavardhani/BB84.git
+
+Design and Parallax Inspiration: https://github.com/thotasravyavardhani/hexora.git
+
+BB84 Web Application Model: https://bb84-quantum-simulator-ww7j624.public.builtwithrocket.new/pages/quantum_lab

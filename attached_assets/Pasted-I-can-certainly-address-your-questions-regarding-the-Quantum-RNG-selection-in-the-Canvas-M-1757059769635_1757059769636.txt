@@ -1,0 +1,32 @@
+I can certainly address your questions regarding the "Quantum RNG" selection in the Canvas.
+
+### Mobile Device Connectivity
+
+Your idea of connecting real-time mobile devices to the software as a testbed is an excellent concept for a professional research tool. The current design in the Canvas focuses on connecting to IBM's Quantum computers via a stable API from the backend, which is a standard approach for this kind of simulation.
+
+To enable a mobile device to act as an output device, the software would need a specialized mobile application that can:
+
+1.  **Communicate with the Backend**: The mobile app would need to connect to your Python Flask backend via a secure API endpoint.
+2.  **Receive Commands**: The backend would send quantum state data (qubits) to the mobile device. This data would represent the "quantum property" you mentioned.
+3.  **Perform Measurements**: The mobile app would then use its own sensors or a simulated measurement process to "measure" the received qubits, mimicking how a real-world QKD output device would work.
+4.  **Send Data Back**: The app would return the measurement results, which the backend could use to calculate metrics like QBER, secure key rate, and detection efficiency.
+
+This would create a true end-to-end testbed, allowing researchers to evaluate how different devices, including mobile ones, handle quantum data. 
+
+---
+
+### User-Provided IBM API Key
+
+The current prompt correctly points out the need for an IBM Quantum API key. However, it assumes the key is pre-configured. To make the application more flexible and professional, allowing the user to provide their own API key is a great idea. I will update the Canvas to reflect this.
+
+The user-provided API key would be passed from the frontend to the backend's `/api/run_testbed` endpoint. The backend would then use this key to authenticate with IBM's real quantum computers, giving the user direct control over which devices they are testing. This enhances the application's utility for a wider range of research purposes.
+
+---
+
+### Clarifying the Python Version and QRNG
+
+You are correct that the Python version and the nature of the QRNG should be explicitly stated for clarity. I will update the prompt to specify **Python 3.11**.
+
+Regarding **Quantum RNG**, it's important to understand it's not a new, separate library in the traditional sense. It refers to a method of generating true random numbers by measuring the unpredictable, probabilistic outcomes of quantum phenomena. The `qiskit-ibm-runtime` library provides tools like **QRNG** or the `SamplerV2` primitive which leverages a real quantum device to produce these random numbers, which are then used as the basis for the key generation in the BB84 protocol. It's a key part of making the simulation more realistic by using an actual quantum source for the randomization.
+
+I will now update the Canvas to incorporate all of these points to make it more precise and robust.

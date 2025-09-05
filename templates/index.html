@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BB84 QKD Professional Simulator & Testbed</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js for data visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Feather Icons -->
+    <script src="https://unpkg.com/feather-icons"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/style.css">
+    
+    <!-- Tailwind configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        quantum: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e'
+                        },
+                        security: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            300: '#86efac',
+                            400: '#4ade80',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d'
+                        },
+                        warning: {
+                            50: '#fefce8',
+                            100: '#fef9c3',
+                            200: '#fef08a',
+                            300: '#fde047',
+                            400: '#facc15',
+                            500: '#eab308',
+                            600: '#ca8a04',
+                            700: '#a16207',
+                            800: '#854d0e',
+                            900: '#713f12'
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.5s ease-out',
+                        'quantum-pulse': 'quantumPulse 2s ease-in-out infinite',
+                        'photon-travel': 'photonTravel 3s linear infinite'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen">
+    
+    <!-- Parallax Background -->
+    <div class="fixed inset-0 z-0 overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-quantum-50 to-blue-100 opacity-50"></div>
+        <div class="parallax-layer absolute inset-0" id="parallax1">
+            <!-- Quantum grid pattern -->
+            <svg class="w-full h-full opacity-10" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
+                        <path d="M 10 0 L 0 0 0 10" fill="none" stroke="#0ea5e9" stroke-width="0.5"/>
+                    </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#grid)" />
+            </svg>
+        </div>
+        <!-- Floating quantum particles -->
+        <div class="absolute inset-0" id="quantumParticles"></div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="relative z-10">
+        
+        <!-- Navigation Header -->
+        <nav class="bg-white/80 backdrop-blur-sm shadow-lg border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="flex items-center">
+                                <div class="quantum-logo w-10 h-10 bg-gradient-to-br from-quantum-500 to-quantum-700 rounded-lg flex items-center justify-center">
+                                    <i data-feather="zap" class="w-6 h-6 text-white"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <h1 class="text-xl font-bold text-gray-900">BB84 QKD Simulator</h1>
+                                    <p class="text-sm text-gray-600">Professional Quantum Testbed</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Navigation Tabs -->
+                    <div class="flex space-x-1">
+                        <button id="tabSimulator" class="nav-tab active px-6 py-2 rounded-lg font-medium transition-all duration-200">
+                            <i data-feather="cpu" class="w-4 h-4 inline mr-2"></i>
+                            BB84 Simulator
+                        </button>
+                        <button id="tabTestbed" class="nav-tab px-6 py-2 rounded-lg font-medium transition-all duration-200">
+                            <i data-feather="server" class="w-4 h-4 inline mr-2"></i>
+                            Device Testbed
+                        </button>
+                    </div>
+                    
+                    <!-- Status Indicators -->
+                    <div class="flex items-center space-x-4">
+                        <div class="flex items-center">
+                            <div id="quantumStatus" class="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>
+                            <span class="ml-2 text-sm text-gray-600">Quantum API</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div id="simulationStatus" class="w-3 h-3 bg-green-500 rounded-full"></div>
+                            <span class="ml-2 text-sm text-gray-600">Simulator</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- BB84 Simulator Panel -->
+        <div id="simulatorPanel" class="panel active">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    
+                    <!-- Simulator Control Sidebar -->
+                    <div class="lg:col-span-1">
+                        <div class="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-6">
+                            <h2 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+                                <i data-feather="settings" class="w-5 h-5 mr-2 text-quantum-600"></i>
+                                Simulation Parameters
+                            </h2>
+                            
+                            <!-- Backend Selection -->
+                            <div class="mb-6">
+                                <label class="block text-sm font-medium text-gray-700 mb-3">Backend Selection</label>
+                                <div class="space-y-2">
+                                    <label class="flex items-center">
+                                        <input type="radio" name="backend" value="classical" checked class="radio-quantum">
+                                        <span class="ml-2 text-sm">Classical Mathematical</span>
+                                        <span class="ml-2 text-xs text-gray-500">(1-32 qubits)</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="radio" name="backend" value="qiskit" class="radio-quantum">
+                                        <span class="ml-2 text-sm">Qiskit IBM Simulator</span>
+                                        <span class="ml-2 text-xs text-gray-500">(1-32 qubits)</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="radio" name="backend" value="real_quantum" class="radio-quantum">
+                                        <span class="ml-2 text-sm">Real Quantum Computer</span>
+                                        <span class="ml-2 text-xs text-red-500">(3-4 qubits only)</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Qubit Generation Scenario -->
+                            <div class="mb-6">
+                                <label class="block text-sm font-medium text-gray-700 mb-3">Qubit Generation</label>
+                                <div class="space-y-2">
+                                    <label class="flex items-center">
+                                        <input type="radio" name="scenario" value="manual" checked class="radio-quantum">
+                                        <span class="ml-2 text-sm">Manual Input</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="radio" name="scenario" value="auto" class="radio-quantum">
+                                        <span class="ml-2 text-sm">Auto-Generated</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="radio" name="scenario" value="photon" class="radio-quantum">
+                                        <span class="ml-2 text-sm">Photon Rate Based</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Scenario Presets -->
+                            <div class="mb-6">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Quick Scenarios</label>
+                                <select id="scenarioPreset" class="select-quantum w-full">
+                                    <option value="custom">Custom Configuration</option>
+                                    <option value="secure_channel">Secure Channel (No Eve)</option>
+                                    <option value="eve_intercept">Eve Intercept Attack</option>
+                                    <option value="noisy_channel">Noisy Channel Test</option>
+                                    <option value="hardware_test">Hardware Connection Test</option>
+                                    <option value="long_distance">Long Distance (50km)</option>
+                                </select>
+                            </div>
+
+                            <!-- Manual Input Section -->
+                            <div id="manualInputs" class="mb-6">
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Bit String</label>
+                                        <input type="text" id="manualBits" value="0110" 
+                                               class="input-quantum w-full" placeholder="e.g., 0110">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Basis String</label>
+                                        <input type="text" id="manualBases" value="+x+x" 
+                                               class="input-quantum w-full" placeholder="e.g., +x+x">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Auto Generation Section -->
+                            <div id="autoInputs" class="mb-6 hidden">
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Number of Qubits</label>
+                                        <input type="range" id="numQubits" min="1" max="32" value="8" 
+                                               class="slider-quantum w-full">
+                                        <div class="flex justify-between text-xs text-gray-500">
+                                            <span id="minQubits">1</span>
+                                            <span id="numQubitsValue">8</span>
+                                            <span id="maxQubits">32</span>
+                                        </div>
+                                        <p id="qubitLimitWarning" class="text-xs text-red-500 mt-1 hidden">Real quantum devices limited to 3-4 qubits</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-3">Random Source</label>
+                                        <div class="space-y-2">
+                                            <label class="flex items-center">
+                                                <input type="radio" name="rngType" value="quantum" class="radio-quantum">
+                                                <span class="ml-2 text-sm">Quantum RNG (IBM)</span>
+                                            </label>
+                                            <label class="flex items-center">
+                                                <input type="radio" name="rngType" value="classical" checked class="radio-quantum">
+                                                <span class="ml-2 text-sm">Classical RNG</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Photon Rate Section -->
+                            <div id="photonInputs" class="mb-6 hidden">
+                                <div class="space-y-4">
+                                    <p class="text-sm text-gray-600">Generate qubits based on photon transmission rate and channel characteristics</p>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Photon Count per Burst</label>
+                                        <input type="range" id="photonCount" min="10" max="100" value="50" 
+                                               class="slider-quantum w-full">
+                                        <div class="flex justify-between text-xs text-gray-500">
+                                            <span>10</span>
+                                            <span id="photonCountValue">50</span>
+                                            <span>100</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- IBM Quantum API Key -->
+                            <div id="apiKeySection" class="mb-6 hidden">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">IBM Quantum API Key</label>
+                                <input type="password" id="ibmApiKey" 
+                                       class="input-quantum w-full" placeholder="Your IBM Quantum API key">
+                                <p class="text-xs text-gray-500 mt-1">Required for real quantum device access</p>
+                                <div id="quantumConnectionStatus" class="mt-2 hidden">
+                                    <div class="flex items-center text-sm">
+                                        <div class="w-2 h-2 bg-yellow-500 rounded-full animate-pulse mr-2"></div>
+                                        <span class="text-gray-600">Testing connection...</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Photon Generation Rate -->
+                            <div class="mb-6">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Photon Rate (MHz)</label>
+                                <input type="range" id="photonRate" min="10" max="1000" value="100" 
+                                       class="slider-quantum w-full">
+                                <div class="flex justify-between text-xs text-gray-500">
+                                    <span>10</span>
+                                    <span id="photonRateValue">100</span>
+                                    <span>1000</span>
+                                </div>
+                            </div>
+
+                            <!-- Distance and Noise -->
+                            <div class="grid grid-cols-2 gap-4 mb-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Distance (km)</label>
+                                    <input type="range" id="distance" min="1" max="100" value="10" 
+                                           class="slider-quantum w-full">
+                                    <div class="text-center text-xs text-gray-500" id="distanceValue">10</div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Noise</label>
+                                    <input type="range" id="noise" min="0" max="0.5" step="0.01" value="0.1" 
+                                           class="slider-quantum w-full">
+                                    <div class="text-center text-xs text-gray-500" id="noiseValue">0.10</div>
+                                </div>
+                            </div>
+
+                            <!-- Eve's Attack -->
+                            <div class="mb-6">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Eve's Attack</label>
+                                <select id="eveAttack" class="select-quantum w-full">
+                                    <option value="none">None</option>
+                                    <option value="intercept_resend">Intercept & Resend</option>
+                                    <option value="beam_splitting">Beam Splitting</option>
+                                    <option value="photon_number">Photon Number Splitting</option>
+                                </select>
+                            </div>
+
+                            <!-- Post-Processing -->
+                            <div class="grid grid-cols-2 gap-4 mb-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Error Correction</label>
+                                    <select id="errorCorrection" class="select-quantum w-full">
+                                        <option value="cascade">Cascade</option>
+                                        <option value="ldpc">LDPC</option>
+                                        <option value="none">None</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Privacy Amplification</label>
+                                    <select id="privacyAmplification" class="select-quantum w-full">
+                                        <option value="standard">Standard</option>
+                                        <option value="optimized">Optimized</option>
+                                        <option value="none">None</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Simulation Controls -->
+                            <div class="space-y-3">
+                                <button id="runSimulation" class="btn-primary w-full">
+                                    <i data-feather="play" class="w-4 h-4 mr-2"></i>
+                                    Run Simulation
+                                </button>
+                                <div class="grid grid-cols-3 gap-2">
+                                    <button id="playAnimation" class="btn-secondary">
+                                        <i data-feather="play" class="w-4 h-4"></i>
+                                    </button>
+                                    <button id="pauseAnimation" class="btn-secondary">
+                                        <i data-feather="pause" class="w-4 h-4"></i>
+                                    </button>
+                                    <button id="resetAnimation" class="btn-secondary">
+                                        <i data-feather="rotate-ccw" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
+                                
+                                <!-- Animation Scrubber -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Animation Timeline</label>
+                                    <input type="range" id="animationScrubber" min="0" max="100" value="0" 
+                                           class="slider-quantum w-full">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Real-time Logs -->
+                        <div class="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-6 mt-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                                <i data-feather="terminal" class="w-5 h-5 mr-2 text-quantum-600"></i>
+                                Simulation Logs
+                            </h3>
+                            <div id="simulationLogs" class="bg-gray-900 text-green-400 p-4 rounded-lg h-48 overflow-y-auto font-mono text-sm">
+                                <div class="log-entry">BB84 QKD Simulator initialized</div>
+                                <div class="log-entry">Ready for simulation...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Main Visualization Area -->
+                    <div class="lg:col-span-3">
+                        
+                        <!-- Quantum Channel Visualization -->
+                        <div class="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-6 mb-6">
+                            <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                                <i data-feather="radio" class="w-5 h-5 mr-2 text-quantum-600"></i>
+                                Quantum Channel Visualization
+                            </h2>
+                            <div id="quantumChannel" class="quantum-channel-container bg-gradient-to-r from-quantum-50 to-blue-50 rounded-lg p-8">
+                                <!-- Canvas for quantum visualization -->
+                                <canvas id="quantumCanvas" width="800" height="300" class="w-full"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Key Statistics Dashboard -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                            
+                            <!-- Key Statistics Table -->
+                            <div class="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                                    <i data-feather="key" class="w-5 h-5 mr-2 text-quantum-600"></i>
+                                    Key Statistics
+                                </h3>
+                                <div class="overflow-x-auto">
+                                    <table id="keyStatsTable" class="w-full text-sm">
+                                        <thead>
+                                            <tr class="border-b border-gray-200">
+                                                <th class="text-left py-2 text-gray-600">Parameter</th>
+                                                <th class="text-left py-2 text-gray-600">Alice</th>
+                                                <th class="text-left py-2 text-gray-600">Bob</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr class="border-b border-gray-100">
+                                                <td class="py-2 font-medium">Original Bits</td>
+                                                <td id="aliceBits" class="py-2 font-mono">-</td>
+                                                <td id="bobBits" class="py-2 font-mono">-</td>
+                                            </tr>
+                                            <tr class="border-b border-gray-100">
+                                                <td class="py-2 font-medium">Bases Used</td>
+                                                <td id="aliceBases" class="py-2 font-mono">-</td>
+                                                <td id="bobBases" class="py-2 font-mono">-</td>
+                                            </tr>
+                                            <tr class="border-b border-gray-100">
+                                                <td class="py-2 font-medium">Sifted Key</td>
+                                                <td id="aliceSifted" class="py-2 font-mono">-</td>
+                                                <td id="bobSifted" class="py-2 font-mono">-</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="py-2 font-medium">Final Key</td>
+                                                <td id="finalKey" class="py-2 font-mono" colspan="2">-</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Security Analysis -->
+                            <div class="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                                    <i data-feather="shield" class="w-5 h-5 mr-2 text-quantum-600"></i>
+                                    Security Analysis
+                                </h3>
+                                
+                                <!-- Enhanced Security Status -->
+                                <div class="mb-6">
+                                    <div id="securityStatus" class="security-indicator pending">
+                                        <i data-feather="clock" class="w-5 h-5"></i>
+                                        <span>Pending Analysis</span>
+                                    </div>
+                                    <!-- Enhanced Security Alert Box -->
+                                    <div id="securityAlert" class="mt-3 p-4 rounded-lg border-2 hidden transition-all duration-300">
+                                        <div class="flex items-center">
+                                            <div id="securityIcon" class="mr-3">
+                                                <i data-feather="shield" class="w-8 h-8"></i>
+                                            </div>
+                                            <div class="flex-1">
+                                                <div id="securityTitle" class="font-semibold text-lg">Security Status</div>
+                                                <div id="securityMessage" class="text-sm mt-1">Analysis pending...</div>
+                                                <div id="qberIndicator" class="text-xs mt-2 font-mono">QBER: --</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Security Metrics -->
+                                <div class="space-y-4">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-gray-600">QBER</span>
+                                        <span id="qberValue" class="font-mono font-medium">-</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-gray-600">Key Rate</span>
+                                        <span id="keyRateValue" class="font-mono font-medium">-</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-gray-600">Accuracy</span>
+                                        <span id="accuracyValue" class="font-mono font-medium">-</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-gray-600">Errors Corrected</span>
+                                        <span id="errorsCorrected" class="font-mono font-medium">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Enhanced Performance Metrics Dashboard -->
+                        <div class="grid grid-cols-1 gap-6">
+                            
+                            <!-- Horizontal Metrics Overview -->
+                            <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                                <div class="metric-card">
+                                    <div class="text-sm text-gray-600">QBER</div>
+                                    <div id="metricQBER" class="metric-value">--%</div>
+                                </div>
+                                <div class="metric-card">
+                                    <div class="text-sm text-gray-600">Key Rate</div>
+                                    <div id="metricKeyRate" class="metric-value">-- kbps</div>
+                                </div>
+                                <div class="metric-card">
+                                    <div class="text-sm text-gray-600">Efficiency</div>
+                                    <div id="metricEfficiency" class="metric-value">--%</div>
+                                </div>
+                                <div class="metric-card">
+                                    <div class="text-sm text-gray-600">Fidelity</div>
+                                    <div id="metricFidelity" class="metric-value">--</div>
+                                </div>
+                            </div>
+
+                            <!-- Horizontal Charts Layout -->
+                            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                
+                                <!-- QBER Analysis Chart - Compact -->
+                                <div class="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-4">
+                                    <h3 class="text-md font-semibold text-gray-900 mb-3 flex items-center">
+                                        <i data-feather="trending-up" class="w-4 h-4 mr-2 text-quantum-600"></i>
+                                        QBER Analysis
+                                    </h3>
+                                    <div class="h-48">
+                                        <canvas id="qberChart"></canvas>
+                                    </div>
+                                </div>
+
+                                <!-- Performance Comparison - Compact -->
+                                <div class="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-4">
+                                    <h3 class="text-md font-semibold text-gray-900 mb-3 flex items-center">
+                                        <i data-feather="bar-chart" class="w-4 h-4 mr-2 text-quantum-600"></i>
+                                        Backend Performance
+                                    </h3>
+                                    <div class="h-48">
+                                        <canvas id="performanceChart"></canvas>
+                                    </div>
+                                </div>
+
+                                <!-- New: Quantum vs Classical Analysis -->
+                                <div class="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-4">
+                                    <h3 class="text-md font-semibold text-gray-900 mb-3 flex items-center">
+                                        <i data-feather="pie-chart" class="w-4 h-4 mr-2 text-quantum-600"></i>
+                                        Quantum Advantage
+                                    </h3>
+                                    <div class="h-48">
+                                        <canvas id="quantumComparisonChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quantum Device Testbed Panel -->
+        <div id="testbedPanel" class="panel">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    
+                    <!-- Testbed Control Sidebar -->
+                    <div class="lg:col-span-1">
+                        <div class="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-6">
+                            <h2 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+                                <i data-feather="server" class="w-5 h-5 mr-2 text-quantum-600"></i>
+                                Device Configuration
+                            </h2>
+                            
+                            <!-- IBM API Key for Testbed -->
+                            <div class="mb-6">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">IBM Quantum API Key</label>
+                                <input type="password" id="testbedApiKey" 
+                                       class="input-quantum w-full" placeholder="Your IBM Quantum API key">
+                                <p class="text-xs text-gray-500 mt-1">Required for real device testing</p>
+                            </div>
+
+                            <!-- Photon Generation Rate -->
+                            <div class="mb-6">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Photon Rate (MHz)</label>
+                                <input type="range" id="testbedPhotonRate" min="50" max="500" value="150" 
+                                       class="slider-quantum w-full">
+                                <div class="flex justify-between text-xs text-gray-500">
+                                    <span>50</span>
+                                    <span id="testbedPhotonRateValue">150</span>
+                                    <span>500</span>
+                                </div>
+                            </div>
+
+                            <!-- Mobile Device Connectivity -->
+                            <div class="mb-6">
+                                <h3 class="text-sm font-medium text-gray-700 mb-3">Mobile Device Integration</h3>
+                                <div class="bg-gradient-to-r from-blue-50 to-quantum-50 rounded-lg p-4 border border-blue-200">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-sm text-gray-700">Device Connection</span>
+                                        <div id="mobileStatus" class="w-3 h-3 bg-red-500 rounded-full"></div>
+                                    </div>
+                                    <button id="connectMobile" class="btn-secondary w-full text-sm">
+                                        <i data-feather="smartphone" class="w-4 h-4 mr-2"></i>
+                                        Connect Mobile Device
+                                    </button>
+                                    <p class="text-xs text-gray-500 mt-2">Connect mobile devices for real-world testing</p>
+                                </div>
+                            </div>
+
+                            <!-- Testbed Controls -->
+                            <div class="space-y-3">
+                                <button id="runTestbed" class="btn-primary w-full">
+                                    <i data-feather="activity" class="w-4 h-4 mr-2"></i>
+                                    Run Device Test
+                                </button>
+                                <button id="exportTestResults" class="btn-secondary w-full">
+                                    <i data-feather="download" class="w-4 h-4 mr-2"></i>
+                                    Export Results
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Connection Status -->
+                        <div class="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-6 mt-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                                <i data-feather="wifi" class="w-5 h-5 mr-2 text-quantum-600"></i>
+                                Connection Status
+                            </h3>
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-gray-600">IBM Quantum API</span>
+                                    <div id="ibmConnectionStatus" class="connection-status disconnected">
+                                        <i data-feather="x-circle" class="w-4 h-4"></i>
+                                        <span>Disconnected</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-gray-600">Firebase</span>
+                                    <div id="firebaseConnectionStatus" class="connection-status connected">
+                                        <i data-feather="check-circle" class="w-4 h-4"></i>
+                                        <span>Connected</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-gray-600">Simulation Engine</span>
+                                    <div id="simulationConnectionStatus" class="connection-status connected">
+                                        <i data-feather="check-circle" class="w-4 h-4"></i>
+                                        <span>Active</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Testbed Results Area -->
+                    <div class="lg:col-span-3">
+                        
+                        <!-- Device Performance Metrics -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                            
+                            <!-- Secure Key Rate -->
+                            <div class="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-6">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h3 class="text-sm font-medium text-gray-600">Secure Key Rate</h3>
+                                    <i data-feather="key" class="w-5 h-5 text-security-500"></i>
+                                </div>
+                                <div class="text-2xl font-bold text-gray-900" id="secureKeyRate">-</div>
+                                <div class="text-sm text-gray-500">bps</div>
+                            </div>
+
+                            <!-- Detection Efficiency -->
+                            <div class="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-6">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h3 class="text-sm font-medium text-gray-600">Detection Efficiency</h3>
+                                    <i data-feather="eye" class="w-5 h-5 text-quantum-500"></i>
+                                </div>
+                                <div class="text-2xl font-bold text-gray-900" id="detectionEfficiency">-</div>
+                                <div class="text-sm text-gray-500">%</div>
+                            </div>
+
+                            <!-- Dark Count Rate -->
+                            <div class="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-6">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h3 class="text-sm font-medium text-gray-600">Dark Count Rate</h3>
+                                    <i data-feather="moon" class="w-5 h-5 text-gray-500"></i>
+                                </div>
+                                <div class="text-2xl font-bold text-gray-900" id="darkCountRate">-</div>
+                                <div class="text-sm text-gray-500">Hz</div>
+                            </div>
+
+                            <!-- Device QBER -->
+                            <div class="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-6">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h3 class="text-sm font-medium text-gray-600">Device QBER</h3>
+                                    <i data-feather="alert-triangle" class="w-5 h-5 text-warning-500"></i>
+                                </div>
+                                <div class="text-2xl font-bold text-gray-900" id="deviceQBER">-</div>
+                                <div class="text-sm text-gray-500">%</div>
+                            </div>
+                        </div>
+
+                        <!-- Device Suitability Analysis -->
+                        <div class="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-6 mb-6">
+                            <h2 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+                                <i data-feather="award" class="w-5 h-5 mr-2 text-quantum-600"></i>
+                                Device Suitability Analysis
+                            </h2>
+                            
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <!-- Suitability Score -->
+                                <div>
+                                    <div class="flex items-center justify-between mb-4">
+                                        <h3 class="text-md font-medium text-gray-700">Overall Rating</h3>
+                                        <div id="suitabilityRating" class="px-3 py-1 rounded-full text-sm font-medium">-</div>
+                                    </div>
+                                    
+                                    <!-- Progress Bar -->
+                                    <div class="w-full bg-gray-200 rounded-full h-3 mb-4">
+                                        <div id="suitabilityProgress" class="bg-quantum-500 h-3 rounded-full transition-all duration-1000" style="width: 0%"></div>
+                                    </div>
+                                    
+                                    <div id="suitabilityRecommendation" class="text-sm text-gray-600">
+                                        Run device test to get suitability analysis
+                                    </div>
+                                </div>
+
+                                <!-- Detailed Metrics -->
+                                <div>
+                                    <h3 class="text-md font-medium text-gray-700 mb-4">Performance Breakdown</h3>
+                                    <div class="space-y-3">
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-sm text-gray-600">Fidelity</span>
+                                            <span id="deviceFidelity" class="font-mono font-medium">-</span>
+                                        </div>
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-sm text-gray-600">Quantum Volume</span>
+                                            <span id="quantumVolume" class="font-mono font-medium">-</span>
+                                        </div>
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-sm text-gray-600">Backend</span>
+                                            <span id="deviceBackend" class="font-mono font-medium">-</span>
+                                        </div>
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-sm text-gray-600">Qubits Available</span>
+                                            <span id="deviceQubits" class="font-mono font-medium">-</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Testbed History -->
+                        <div class="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-6">
+                            <h2 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+                                <i data-feather="clock" class="w-5 h-5 mr-2 text-quantum-600"></i>
+                                Test History
+                            </h2>
+                            
+                            <div id="testHistory" class="space-y-4">
+                                <div class="text-center text-gray-500 py-8">
+                                    <i data-feather="database" class="w-12 h-12 mx-auto mb-4 text-gray-300"></i>
+                                    <p>No test results yet. Run a device test to see history.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden">
+        <div class="flex items-center justify-center h-full">
+            <div class="bg-white rounded-xl p-8 max-w-md mx-4">
+                <div class="text-center">
+                    <div class="quantum-spinner mb-4"></div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Processing Quantum Operations</h3>
+                    <p id="loadingMessage" class="text-gray-600">Initializing simulation...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/static/app.js"></script>
+    <script src="/static/visualization.js"></script>
+    
+    <!-- Initialize Feather Icons -->
+    <script>
+        feather.replace();
+    </script>
+</body>
+</html>
